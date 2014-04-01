@@ -1,0 +1,60 @@
+/*
+ * Copyright (C) 2014 Miguel Gamboa at CCISEL
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package binder;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+import static utils.SneakyUtils.throwAsRTException;
+
+/**
+ *
+ * @author Miguel Gamboa at CCISEL
+ * 
+ * Changed by Carlos Marques (#25993) as part of assignment TPC 06
+
+ */
+public class BindProp implements BindMember{
+
+    @Override
+    public <T> boolean bind(T target, String key, Object v) {
+        Method[] ms = target.getClass().getMethods();
+        try {
+            for (Method m : ms) {
+                String mName = m.getName();
+                if (!mName.equalsIgnoreCase("set" + key)) {
+                    continue;
+                }
+                Class<?>[] paramsKlasses = m.getParameterTypes();
+                if (paramsKlasses.length != 1) {
+                    continue;
+                }
+                Class<?> propType = WrapperUtils.toWrapper(paramsKlasses[0]);
+                if (propType.isAssignableFrom(v.getClass())) {
+                    m.setAccessible(true);
+                    m.invoke(target, v);
+                    return true;
+                }
+            }
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            throwAsRTException(ex);
+        }
+        return false;
+
+    }
+
+}
