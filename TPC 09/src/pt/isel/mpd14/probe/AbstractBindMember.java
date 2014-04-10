@@ -48,6 +48,16 @@ public abstract class AbstractBindMember<T> implements BindMember<T> {
 					 *  - signature matches String formatterMethod(String s)
 					 *  If found, encapsulate in an instance of type Formatter
 					 */
+					// TODO: Check if targetClass has desiredMethod.
+					// Solutions:
+					//	Not very good Solution 1:
+					// 	Isolate the following into a single try / catch(NoSuchMethodException e)
+					//	which will do nothing except bypass the following code (thus hiding the exception)
+					
+					//	Expensive Solution:
+					//	Forget about .getDelaredMethod() and iterate over collection of Methods
+					//	from ..getDeclaredMethods() and get instance of method if a matching
+					//	Method name exists, otherwise continue.
 					final Method m = targetClass.getDeclaredMethod(a.formatterMethod(), String.class);
 					m.setAccessible(true);
 					Formatter frt = new Formatter(){
